@@ -12,7 +12,24 @@ router.get('/login', function(req, res){
 });
 
 router.post('/login', function(req, res){
-  //TO DO
+  var username = req.body.username;
+  var password = req.body.password;
+  User.getByUsername(username, function(err, user){
+    if (user == null){
+      req.flash('error', 'User does not exists.');
+      res.redirect('/authentication/login');
+    }else{
+      User.comparePassword(password, user.password, function(err, isMatch){
+        if (isMatch == true){
+          req.flash('success', 'You logined successfully.');
+          res.redirect('/');
+        }else{
+          req.flash('error', 'Wrong password.');
+          res.redirect('/authentication/login');
+        }
+      });
+    }
+  });
 });
 
 router.get('/register', function(req, res){
@@ -31,13 +48,13 @@ router.post('/register', function(req, res){
   });
 
   if (newUser.password != req.body.passwordConfirmation){
-    req.flash('error', 'Paswords do not match');
+    req.flash('error', 'Paswords do not match.');
     res.redirect('/authentication/register');
   }else{
     User.getByUsername(newUser.username, function(err, user){
       if (err) throw err;
       if (user != null) {
-        req.flash('error', 'User already exists');
+        req.flash('error', 'User already exists.');
         res.redirect('/authentication/register');
       }else{
         User.saveNewUser(newUser, function(err, user){
