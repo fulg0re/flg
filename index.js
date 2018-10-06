@@ -7,6 +7,7 @@ var expressSession = require('express-session');
 var flash = require('connect-flash');
 var path = require('path');
 var auth = require('./routes/auth.js');
+var mainConfig = require('./config/mainConfig.js');
 
 var app = express();
 
@@ -22,7 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(expressSession({
-  secret: 'asdrfrf',
+  secret: 'some_secret_key',
   saveUninitialized: false,
   resave: false
 }));
@@ -30,8 +31,10 @@ app.use(flash());
 app.use('/authentication', auth);
 
 app.get('/', function(req, res) {
-  // TO DO...
-  res.redirect("/authentication/login");
+  res.render("main/homePage.ejs", {
+    title: mainConfig.homeTitle,
+    messages: req.flash()
+  });
 });
 
 app.listen(3000, function(){
