@@ -1,18 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
-// router.use(bodyParser());
-
 var User = require('../model/user.js');
 var mainConfig = require('../config/mainConfig.js');
 
 router.get('/login', function(req, res){
   res.render("user/loginPage.ejs", {
     title: mainConfig.loginTitle,
-    errors: null,
-    successes: null,
-    infos: null,
-    warnings: null
+    messages: req.flash()
   });
 });
 
@@ -23,43 +18,41 @@ router.post('/login', function(req, res){
 router.get('/register', function(req, res){
   res.render("user/registerPage.ejs", {
     title: mainConfig.registerTitle,
-    errors: null,
-    successes: null,
-    infos: null,
-    warnings: null
+    messages: req.flash()
   });
 });
 
 router.post('/register', function(req, res){
-  var userInput = {
+  var newUser = new User ({
     username: req.body.username,
-    email: req.body.email,
     password: req.body.password,
-    passwordConfirmation: req.body.passwordConfirmation
-  };
+    email: req.body.email,
+    name: req.body.name
+  });
 
-  if (userInput.password != userInput.passwordConfirmation){
-    res.render("user/registerPage.ejs", {
-      title: mainConfig.registerTitle,
-      errors: ['Paswords do not match'],
-      successes: null,
-      infos: null,
-      warnings: null
+  if (newUser.password != req.body.passwordConfirmation){
+    req.flash('error', 'Paswords do not match');
+    res.redirect('/authentication/register');
+  }else{
+    User.getByUsername(newUser.username, function(err, user){
+      if (err) throw err;
+      if (user != null) {
+        req.flash('error', 'User already exists');
+        res.redirect('/authentication/register');
+      }else{
+        User.saveNewUser(newUser, function(err, user){
+          if (err) throw err;
+          if (user){
+            req.flash('success', 'Registration is successful. You can login now.');
+            res.redirect('/authentication/login');
+          }else{
+            req.flash('error', 'Something went wrong.');
+            res.redirect('/authentication/register');
+          }
+        });
+      }
     });
   }
-
-  // User.comparePassword(userInput.);
-
-  // var newUser = new User ({
-  //   username: req.body.username,
-  //   password: 'qwe',
-  //   email: 'pp@pp.pp',
-  //   name: 'Pavlo'
-  // });
-  // User.saveNewUser(newUser, function (err, user) {
-  //   if(err) throw err;
-  //   console.log(`New user ${user.username} added successfully...`);
-  // });
 });
 
 module.exports = router;
