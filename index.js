@@ -1,11 +1,32 @@
 // MONGODB sudo systemctl start mongodb
+var express = require('express');
+var engine = require('ejs-locals');
+var bodyParser = require('body-parser');
 
-var express = require('express'),
-  bodyParser = require('body-parser');
+var app = express();
+
+app.engine('ejs', engine);
+
+// app SETs...
+app.set('view engine', 'ejs');
+
+// app USEs...
+app.use(express.static(__dirname + '/public'));
 
 var User = require('./model/user.js');
 
+app.get('/', function(req, res) {
+  var locals = {
+    title: 'Some Page Title',
+    description: 'Some Page Description',
+    header: 'Some Page Header'
+  };
+  res.render('homePage.ejs', locals);
+});
 
+app.listen(3000, function(){
+  console.log('Server started on port 3000...');
+});
 
 // //Working method!
 // User.getByUsername('qwe', function (err, user) {
