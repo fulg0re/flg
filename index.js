@@ -3,6 +3,7 @@ var express = require('express');
 var engine = require('ejs-locals');
 var bodyParser = require('body-parser');
 var path = require('path');
+var localStorage = require('localStorage')
 var auth = require('./routes/auth.js');
 
 var app = express();
@@ -15,18 +16,13 @@ app.set('views', path.join(__dirname, 'views'));
 
 // app USEs...
 app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/authentication', auth);
 
 app.get('/', function(req, res) {
   // TO DO...
   res.redirect("/authentication/login");
-
-  // var locals = {
-  //   title: 'Some Page Title',
-  //   description: 'Some Page Description',
-  //   header: 'Some Page Header'
-  // };
-  // res.render('homePage.ejs', locals);
 });
 
 app.listen(3000, function(){

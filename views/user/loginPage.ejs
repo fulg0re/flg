@@ -1,6 +1,6 @@
 <% layout('../layout/authenticationLayout.ejs') -%>
 
-<form>
+<form action="/authentication/login" method="post">
   <h2 class="authentication-title">Login</h2>
   <div class="form-group">
     <input type="text" class="form-control" name="username" placeholder="username">
@@ -9,4 +9,7 @@
     <input type="password" class="form-control" name="password" placeholder="password">
   </div>
   <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>
+  <a href="register">
+    <h5>Register</h5>
+  </a>
 </form>
