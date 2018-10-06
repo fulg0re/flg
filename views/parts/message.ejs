@@ -1,33 +1,13 @@
 <div class="messages">
-  <% if (errors) { %>
-    <% errors.forEach(function(error) { %>
-      <div class="alert alert-danger" role="alert">
-        <%= error %>
-      </div>
-    <% }); %>
+  <% if (messages.error !== undefined) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= messages.error %>
+    </div>
   <% } %>
 
-  <% if (successes) { %>
-    <% successes.forEach(function(success) { %>
-      <div class="alert alert-success" role="alert">
-        <%= success %>
-      </div>
-    <% }); %>
-  <% } %>
-
-  <% if (infos) { %>
-    <% infos.forEach(function(info) { %>
-      <div class="alert alert-info" role="alert">
-        <%= info %>
-      </div>
-    <% }); %>
-  <% } %>
-
-  <% if (warnings) { %>
-    <% warnings.forEach(function(warning) { %>
-      <div class="alert alert-warning" role="alert">
-        <%= warning %>
-      </div>
-    <% }); %>
+  <% if (messages.success !== undefined) { %>
+    <div class="alert alert-success" role="alert">
+      <%= messages.success %>
+    </div>
   <% } %>
 </div>

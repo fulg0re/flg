@@ -2,8 +2,10 @@
 var express = require('express');
 var engine = require('ejs-locals');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var expressSession = require('express-session');
+var flash = require('connect-flash');
 var path = require('path');
-var localStorage = require('localStorage')
 var auth = require('./routes/auth.js');
 
 var app = express();
@@ -18,6 +20,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(expressSession({
+  secret: 'asdrfrf',
+  saveUninitialized: false,
+  resave: false
+}));
+app.use(flash());
 app.use('/authentication', auth);
 
 app.get('/', function(req, res) {
