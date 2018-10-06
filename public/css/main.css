@@ -3,15 +3,3 @@
   text-align: center;
 }
 /*============*/
-
-/*===Login form and Register form===*/
-.authentication-center {
-  display: block;
-  width: 300px;
-  margin: 50px auto;
-}
-
-.authentication-title {
-  text-align: center;
-}
-/*==================================*/
