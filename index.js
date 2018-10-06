@@ -2,6 +2,8 @@
 var express = require('express');
 var engine = require('ejs-locals');
 var bodyParser = require('body-parser');
+var path = require('path');
+var auth = require('./routes/auth.js');
 
 var app = express();
 
@@ -9,19 +11,22 @@ app.engine('ejs', engine);
 
 // app SETs...
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // app USEs...
 app.use(express.static(__dirname + '/public'));
-
-var User = require('./model/user.js');
+app.use('/authentication', auth);
 
 app.get('/', function(req, res) {
-  var locals = {
-    title: 'Some Page Title',
-    description: 'Some Page Description',
-    header: 'Some Page Header'
-  };
-  res.render('homePage.ejs', locals);
+  // TO DO...
+  res.redirect("/authentication/login");
+
+  // var locals = {
+  //   title: 'Some Page Title',
+  //   description: 'Some Page Description',
+  //   header: 'Some Page Header'
+  // };
+  // res.render('homePage.ejs', locals);
 });
 
 app.listen(3000, function(){

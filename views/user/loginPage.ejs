@@ -1,1 +1,12 @@
-<h1>Login Page</h1>
+<% layout('../layout/authenticationLayout.ejs') -%>
+
+<form>
+  <h2 class="authentication-title">Login</h2>
+  <div class="form-group">
+    <input type="text" class="form-control" name="username" placeholder="username">
+  </div>
+  <div class="form-group">
+    <input type="password" class="form-control" name="password" placeholder="password">
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>
+</form>
