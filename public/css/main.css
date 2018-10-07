@@ -77,8 +77,74 @@ body {
 /*============*/
 /*===FOOTER===*/
 .footer {
-  text-align: center;
+  /*text-align: center;*/
   background-color: #343a40;
+  color: white;
+}
+
+.footer p {
+  /*border: 1px solid white;*/
+  display: block;
+  width: 250px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.footer ul li {
+  font-size: 14px;
+  display: inline-block;
+  width: 250px;
+  margin: 20px 20px 20px 0;
+  vertical-align: top;
+}
+
+.footer-div-ul {
+  border: 1px solid white;
+  display: inline-block;
+  margin: auto;
+  width: 70%;
+  vertical-align: top;
+}
+
+.social-links {
+  /*border: 1px solid red;*/
+  display: inline-block;
+  text-align: right;
+  margin: 0 0 0 20px;
+  width: 60px;
+}
+
+.social-links a {
+  text-decoration: none;
+}
+
+.fa {
+  padding: 15px;
+  font-size: 25px;
+  width: 55px;
+  text-align: center;
+  text-decoration: none;
+  margin: 4px 2px;
+  border-radius: 50%;
+}
+
+.fa:hover {
+  color: #bbcece;
+  opacity: 0.7;
+}
+
+.fa-facebook {
+  background: #3B5998;
+  color: white;
+}
+
+.fa-twitter {
+  background: #55ACEE;
+  color: white;
+}
+
+.fa-google {
+  background: #dd4b39;
   color: white;
 }
 /*============*/
