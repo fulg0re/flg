@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var flash = require('connect-flash');
 var path = require('path');
+var jwt = require('jsonwebtoken');
 var auth = require('./routes/auth.js');
 var mainConfig = require('./config/mainConfig.js');
 
