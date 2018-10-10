@@ -31,6 +31,23 @@ app.use(expressSession({
 app.use(flash());
 app.use('/authentication', auth);
 
+app.use(function(req, res, next) {
+  //verify token in cookies
+  jwt.verify(req.cookies.auth_token, 'secretkey', (err, authData) => {
+    if(err) {
+      //if token expires, redirect on login page with message
+      req.flash('error', 'Please login first...');
+      res.redirect('/authentication/login');
+    } else {
+      //if token not expires, generate new token,set in cookie and go next
+      jwt.sign({authUser: authData.authUser}, 'secretkey', {expiresIn: '30s'}, (err, newToken) => {
+        res.cookie('auth_token', newToken);
+        next();
+      });
+    }
+  });
+});
+
 app.get('/', function(req, res) {
   res.render("main/homePage.ejs", {
     title: mainConfig.homeTitle,
