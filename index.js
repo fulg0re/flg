@@ -7,6 +7,7 @@ var expressSession = require('express-session');
 var flash = require('connect-flash');
 var path = require('path');
 var jwt = require('jsonwebtoken');
+var fs = require('fs');
 var auth = require('./routes/auth.js');
 var mainConfig = require('./config/mainConfig.js');
 
@@ -30,6 +31,70 @@ app.use(expressSession({
 }));
 app.use(flash());
 app.use('/authentication', auth);
+
+//TEMP ROUTES========================================================================
+var Sentence = require('./model/rundomSentence.js');
+app.get('/sentence/add', function(req, res){
+  var someText = 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+  var newSentence = new Sentence ({
+    text: someText,
+    length: someText.length
+  });
+  Sentence.saveNewSentence(newSentence, function(err, sentence){
+    if (err) throw err;
+    if (sentence){
+      res.send('New Sentence Added');
+    }else{
+      req.send('Something went wrong');
+    }
+  });
+});
+
+app.get('/sentence/get_by_length', function(req, res){
+  var length = 40;
+  Sentence.getByLength(length, function(err, sentences){
+    if (err) throw err;
+    if (sentences) {
+      var randomItem = sentences[Math.floor(Math.random()*sentences.length)];
+      res.send(JSON.stringify(randomItem));
+    }else{
+      req.send('Something went wrong');
+    }
+  });
+});
+
+app.get('/sentence/get_all', function(req, res){
+  Sentence.getAll(function(err, sentences){
+    if (err) throw err;
+    if (sentences) {
+      res.send(JSON.stringify(sentences.length));
+    }else{
+      req.send('Something went wrong');
+    }
+  });
+});
+
+app.get('/file/read', function(req, res){
+  fs.readFile('./import/sentences.txt', {encoding: 'utf-8'}, function(err, data) {
+    var sentencesArray = data.split('. ');
+
+    sentencesArray.forEach(function(sentence) {
+      var sentenceText = sentence.replace(".", "");
+      if (sentenceText.length >= 15){
+        var newSentence = new Sentence ({
+          text: sentenceText,
+          length: sentenceText.length
+        });
+        Sentence.saveNewSentence(newSentence, function(err, sent){
+          if (err) throw err;
+        });
+      }
+    });
+
+    res.send('OK');
+  });
+});
+//====================================================================================
 
 app.use(function(req, res, next) {
   //verify token in cookies
