@@ -22,8 +22,15 @@ router.post('/login', function(req, res){
     }else{
       User.comparePassword(password, user.password, function(err, isMatch){
         if (isMatch == true){
-          req.flash('success', 'You logined successfully.');
-          res.redirect('/');
+          var authUser = {
+            username: user.username,
+            email: user.email
+          };
+          jwt.sign({authUser}, 'secretkey', {expiresIn: '30s'}, (err, token) => {
+            req.flash('success', 'You logined successfully.');
+            res.cookie('auth_token', token);
+            res.redirect('/');
+          });
         }else{
           req.flash('error', 'Wrong password.');
           res.redirect('/authentication/login');
