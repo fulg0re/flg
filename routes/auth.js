@@ -26,7 +26,7 @@ router.post('/login', function(req, res){
             username: user.username,
             email: user.email
           };
-          jwt.sign({authUser}, 'secretkey', {expiresIn: '30s'}, (err, token) => {
+          jwt.sign({authUser}, 'secretkey', {expiresIn: '300s'}, (err, token) => {
             req.flash('success', 'You logined successfully.');
             res.cookie('auth_token', token);
             res.redirect('/');
