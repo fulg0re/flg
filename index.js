@@ -1,4 +1,5 @@
 // MONGODB sudo systemctl start mongodb
+// MONGODB sudo systemctl start mongod
 var express = require('express');
 var engine = require('ejs-locals');
 var bodyParser = require('body-parser');
