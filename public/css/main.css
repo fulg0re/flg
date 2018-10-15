@@ -8,8 +8,15 @@
   padding: 5px 5px 15px 5px;
 }
 
-#battle-text {
-  text-align: center;
+#battle-close {
+  display: inline-block;
+  color: white;
+  margin: 0 0 15px 5px;
+  cursor: pointer;
+}
+
+.battle-text {
+  display: inline-block;
 }
 
 #battle-input {
@@ -19,13 +26,6 @@
   border-radius: 15px;
   text-align: center;
   outline: none;
-}
-
-#battle-close {
-  display: inline-block;
-  color: white;
-  margin: 0 0 15px 5px;
-  cursor: pointer;
 }
 /*================*/
 
