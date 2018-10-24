@@ -75,26 +75,26 @@ var Sentence = require('./model/rundomSentence.js');
 //   });
 // });
 
-// app.get('/file/read', function(req, res){
-//   fs.readFile('./import/sentences.txt', {encoding: 'utf-8'}, function(err, data) {
-//     var sentencesArray = data.split('. ');
+app.get('/file/read', function(req, res){
+  fs.readFile('./import/sentences.txt', {encoding: 'utf-8'}, function(err, data) {
+    var sentencesArray = data.split('. ');
 
-//     sentencesArray.forEach(function(sentence) {
-//       var sentenceText = sentence.replace(".", "");
-//       if (sentenceText.length >= 15){
-//         var newSentence = new Sentence ({
-//           text: sentenceText,
-//           length: sentenceText.length
-//         });
-//         Sentence.saveNewSentence(newSentence, function(err, sent){
-//           if (err) throw err;
-//         });
-//       }
-//     });
+    sentencesArray.forEach(function(sentence) {
+      var sentenceText = sentence.replace(".", "");
+      if (sentenceText.length >= 15){
+        var newSentence = new Sentence ({
+          text: sentenceText,
+          length: sentenceText.length
+        });
+        Sentence.saveNewSentence(newSentence, function(err, sent){
+          if (err) throw err;
+        });
+      }
+    });
 
-//     res.send('OK');
-//   });
-// });
+    res.send('OK');
+  });
+});
 //====================================================================================
 
 app.use(function(req, res, next) {
