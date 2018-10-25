@@ -9,10 +9,15 @@ var flash = require('connect-flash');
 var path = require('path');
 var jwt = require('jsonwebtoken');
 var fs = require('fs');
+var usersOnline = {};
+
 var auth = require('./routes/auth.js');
 var mainConfig = require('./config/mainConfig.js');
 
 var app = express();
+
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
 app.engine('ejs', engine);
 
@@ -75,26 +80,26 @@ var Sentence = require('./model/rundomSentence.js');
 //   });
 // });
 
-app.get('/file/read', function(req, res){
-  fs.readFile('./import/sentences.txt', {encoding: 'utf-8'}, function(err, data) {
-    var sentencesArray = data.split('. ');
+// app.get('/file/read', function(req, res){
+//   fs.readFile('./import/sentences.txt', {encoding: 'utf-8'}, function(err, data) {
+//     var sentencesArray = data.split('. ');
 
-    sentencesArray.forEach(function(sentence) {
-      var sentenceText = sentence.replace(".", "");
-      if (sentenceText.length >= 15){
-        var newSentence = new Sentence ({
-          text: sentenceText,
-          length: sentenceText.length
-        });
-        Sentence.saveNewSentence(newSentence, function(err, sent){
-          if (err) throw err;
-        });
-      }
-    });
+//     sentencesArray.forEach(function(sentence) {
+//       var sentenceText = sentence.replace(".", "");
+//       if (sentenceText.length >= 15){
+//         var newSentence = new Sentence ({
+//           text: sentenceText,
+//           length: sentenceText.length
+//         });
+//         Sentence.saveNewSentence(newSentence, function(err, sent){
+//           if (err) throw err;
+//         });
+//       }
+//     });
 
-    res.send('OK');
-  });
-});
+//     res.send('OK');
+//   });
+// });
 //====================================================================================
 
 app.use(function(req, res, next) {
@@ -116,6 +121,7 @@ app.use(function(req, res, next) {
 app.get('/', function(req, res) {
   res.render("main/homePage.ejs", {
     title: mainConfig.homeTitle,
+    username: req.cookies.username,
     messages: req.flash()
   });
 });
@@ -133,9 +139,41 @@ app.get('/battle/start', function(req, res) {
   });
 });
 
-app.listen(3000, function(){
+io.on('connection', function(socket){
+
+  socket.on('add-user', function(data){
+    socket.join('main room');
+    socket.leave(socket.id);
+
+    if (usersOnline[data.username] !== undefined) {
+      delete usersOnline[data.username];
+      io.sockets.sockets[socket.id].disconnect();
+    }
+    usersOnline[data.username] = {
+      "socket": socket.id
+    };
+
+    console.log(usersOnline);
+  });
+
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+
+  // console.log(io.sockets.adapter.rooms);
+  // console.log(socket);
+});
+
+http.listen(3000, function(){
   console.log('Server started on port 3000...');
 });
+
+// app.listen(3000, function(){
+//   console.log('Server started on port 3000...');
+// });
+
+
+
 
 // //Working method!
 // User.getByUsername('qwe', function (err, user) {
