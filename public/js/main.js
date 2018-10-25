@@ -4,6 +4,8 @@ $(document).ready(function(){
   });
 
   $("#start-battle").click(function(){
+    var socket = io('http://127.0.0.1:3000/');
+
     $.ajax({
       url: '/battle/start',
       method: 'get',
@@ -13,6 +15,8 @@ $(document).ready(function(){
           console.log(result.error);
         }else{
           localStorage.sentence = data.battleSentence;
+
+          socket.emit("add-user", {"username": $.cookie('username')});
 
           if ($('#battle-div').length != 0) {
             $("#battle-div").remove();
