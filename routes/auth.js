@@ -53,7 +53,10 @@ router.post('/register', function(req, res){
     username: req.body.username,
     password: req.body.password,
     email: req.body.email,
-    name: req.body.name
+    name: req.body.name,
+    battleStatus: 'not in battle',
+    oponent: '',
+    cps: 0
   });
 
   if (newUser.password != req.body.passwordConfirmation){

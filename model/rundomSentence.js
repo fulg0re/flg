@@ -8,10 +8,10 @@ db.once('open', function() {
   console.log('Connected to DB successfully...');
 });
 
-//Crypt for hash password
-// var bcrypt = require('bcryptjs');
-
-// Sentence Schema
+/**
+ * [SentenceSchema for DB]
+ * @type {[object]}
+ */
 var SentenceSchema = mongoose.Schema({
   text: {
     type: String,
@@ -24,15 +24,38 @@ var SentenceSchema = mongoose.Schema({
 
 var Sentence = module.exports = mongoose.model('Sentence', SentenceSchema);
 
+/**
+ * [getByLength]
+ * @param  {[int]}      length
+ * @param  {Function}   callback
+ * @return {[array]}   [sentences from DB]
+ *
+ * Sentence.getByLength(length, function(err, sentences){...}
+ */
 module.exports.getByLength = function(length, callback){
   var query = {length: length};
   Sentence.find(query, callback);
 }
 
+/**
+ * [getAll (get all sentences from DB)]
+ * @param  {Function}   callback
+ * @return {[array]}
+ *
+ * Sentence.getAll(function(err, sentences){...}
+ */
 module.exports.getAll = function(callback){
   Sentence.find(callback);
 }
 
+/**
+ * [saveNewSentence]
+ * @param  {[string]}   newSentence
+ * @param  {Function}   callback
+ * @return {[type]}               [description]
+ *
+ * Sentence.saveNewSentence(newSentence, function(err, sent){...}
+ */
 module.exports.saveNewSentence = function(newSentence, callback){
   newSentence.save(callback);
 }

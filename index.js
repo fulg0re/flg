@@ -9,7 +9,8 @@ var flash = require('connect-flash');
 var path = require('path');
 var jwt = require('jsonwebtoken');
 var fs = require('fs');
-var usersOnline = {};
+var usersOnline = [];
+var battleRooms = [];
 
 var auth = require('./routes/auth.js');
 var mainConfig = require('./config/mainConfig.js');
@@ -38,8 +39,108 @@ app.use(expressSession({
 app.use(flash());
 app.use('/authentication', auth);
 
-//TEMP ROUTES========================================================================
+app.use(function(req, res, next) {
+  //verify token in cookies
+  jwt.verify(req.cookies.auth_token, 'secretkey', (err, authData) => {
+    if(err) {
+      //if token expires, redirect on login page
+      res.redirect('/authentication/login');
+    } else {
+      //if token not expires, generate new token,set in cookie and go next
+      jwt.sign({authUser: authData.authUser}, 'secretkey', {expiresIn: '300s'}, (err, newToken) => {
+        res.cookie('auth_token', newToken);
+        next();
+      });
+    }
+  });
+});
+
+app.get('/', function(req, res) {
+  res.render("main/homePage.ejs", {
+    title: mainConfig.homeTitle,
+    username: req.cookies.username,
+    messages: req.flash()
+  });
+});
+
 var Sentence = require('./model/rundomSentence.js');
+
+app.get('/battle/start', function(req, res) {
+  var length = 150;
+  Sentence.getByLength(length, function(err, sentences){
+    if (err) throw err;
+    if (sentences) {
+      var randomItem = sentences[Math.floor(Math.random()*sentences.length)];
+      res.send(JSON.stringify({battleSentence: randomItem.text}));
+    }else{
+      res.send(JSON.stringify({error: 'Something went wrong'}));
+    }
+  });
+});
+
+var User = require('./model/user.js');
+
+io.on('connection', function(socket){
+
+  socket.on('addUser', function(data){
+    socket.join('main room');
+    socket.leave(socket.id);
+    if (usersOnline[data.username] === undefined) {
+      usersOnline[data.username] = [socket.id];
+    } else {
+      usersOnline[data.username].push(socket.id);
+    }
+    console.log(`user "${data.username}" connected with socket "${socket.id}"`);
+  });
+
+  socket.on('readyForBattrle', function(data){
+    User.getByUsername(data.username, function(err, userDB){
+      if (err) throw err;
+      userDB.battleStatus = 'ready for battle';
+      userDB.save();
+
+      /** find 2 oponents for battle */
+      var query = {
+        battleStatus: 'ready for battle',
+        cps: userDB.cps
+      };
+      User.getUsersForBattle(query, function(err, users){
+        if (err) throw err;
+        if (users.length > 1) {
+          var roomIndex = new Date().getTime();
+          var roomName = 'room' + roomIndex;
+          users.forEach(function(user){
+            if (battleRooms[roomName] === undefined) {
+              battleRooms[roomName] = [user.username];
+            } else {
+              battleRooms[roomName].push(user.username);
+            }
+            user.battleStatus = 'in battle';
+            user.save();
+            /** TODO send for users redirect socket... */
+          });
+        }
+      });
+    });
+  });
+
+  socket.on('disconnect', function(){
+    for (var user in usersOnline) {
+      var index = usersOnline[user].indexOf(socket.id.toString());
+      if (index > -1) {
+        usersOnline[user].splice(index, 1);
+        console.log(`user "${user}" disconnected with socket "${socket.id}"`);
+      }
+    }
+  });
+});
+
+http.listen(3000, function(){
+  console.log('Server started on port 3000...');
+});
+
+//TEMP ROUTES========================================================================
+// var Sentence = require('./model/rundomSentence.js');
 // app.get('/sentence/add', function(req, res){
 //   var someText = 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
 //   var newSentence = new Sentence ({
@@ -101,131 +202,3 @@ var Sentence = require('./model/rundomSentence.js');
 //   });
 // });
 //====================================================================================
-
-app.use(function(req, res, next) {
-  //verify token in cookies
-  jwt.verify(req.cookies.auth_token, 'secretkey', (err, authData) => {
-    if(err) {
-      //if token expires, redirect on login page
-      res.redirect('/authentication/login');
-    } else {
-      //if token not expires, generate new token,set in cookie and go next
-      jwt.sign({authUser: authData.authUser}, 'secretkey', {expiresIn: '300s'}, (err, newToken) => {
-        res.cookie('auth_token', newToken);
-        next();
-      });
-    }
-  });
-});
-
-app.get('/', function(req, res) {
-  res.render("main/homePage.ejs", {
-    title: mainConfig.homeTitle,
-    username: req.cookies.username,
-    messages: req.flash()
-  });
-});
-
-app.get('/battle/start', function(req, res) {
-  var length = 150;
-  Sentence.getByLength(length, function(err, sentences){
-    if (err) throw err;
-    if (sentences) {
-      var randomItem = sentences[Math.floor(Math.random()*sentences.length)];
-      res.send(JSON.stringify({battleSentence: randomItem.text}));
-    }else{
-      res.send(JSON.stringify({error: 'Something went wrong'}));
-    }
-  });
-});
-
-io.on('connection', function(socket){
-
-  socket.on('add-user', function(data){
-    socket.join('main room');
-    socket.leave(socket.id);
-
-    if (usersOnline[data.username] !== undefined) {
-      delete usersOnline[data.username];
-      io.sockets.sockets[socket.id].disconnect();
-    }
-    usersOnline[data.username] = {
-      "socket": socket.id
-    };
-
-    console.log(usersOnline);
-  });
-
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
-  });
-
-  // console.log(io.sockets.adapter.rooms);
-  // console.log(socket);
-});
-
-http.listen(3000, function(){
-  console.log('Server started on port 3000...');
-});
-
-// app.listen(3000, function(){
-//   console.log('Server started on port 3000...');
-// });
-
-
-
-
-// //Working method!
-// User.getByUsername('qwe', function (err, user) {
-//   if (err) throw err;
-//   console.log(user);
-// });
-
-
-
-// //Working method!
-// User.getAll(function (err, users) {
-//   if (err) throw err;
-//   users.forEach(function(user) {
-//     console.log(user);
-//   });
-// });
-
-
-
-// //Working method!
-// var newUser = new User ({
-//   username: 'fulg0re',
-//   password: 'qwe',
-//   email: 'pp@pp.pp',
-//   name: 'Pavlo'
-// });
-// User.saveNewUser(newUser, function (err, user) {
-//   if(err) throw err;
-//   console.log(`New user ${user.username} added successfully...`);
-// });
-
-
-
-// //Working method!
-// var candidateUser = {
-//   username: 'fulg0re',
-//   password: 'qwe',
-//   email: 'pp@pp.pp',
-//   name: 'Pavlo'
-// };
-// User.getByUsername(candidateUser.username, function (err, user) {
-//   if(err) throw err;
-//   if (user) {
-//     User.comparePassword(candidateUser.password, user.password, function (err, isMatch) {
-//       if (err) throw err;
-//       if (isMatch) {
-//         console.log('Passwords is match');
-//       } else {
-//         console.log('Passwords do not match');
-//       }
-//     });
-//   } else {
-//     console.log('User not found!');
-//   }
-// });
