@@ -63,6 +63,22 @@ app.get('/', function(req, res) {
   });
 });
 
+app.get('/battle/progress', function(req, res) {
+  User.getByUsername(req.cookies.username, function(err, userDB){
+    if (err) throw err;
+    if (userDB.battleStatus != 'in battle') {
+      req.flash('error', 'You have no permision for battle now.');
+      res.redirect('/');
+    } else {
+      res.render("main/battlePage.ejs", {
+        title: mainConfig.battleTitle,
+        username: req.cookies.username,
+        messages: req.flash()
+      });
+    }
+  });
+});
+
 var Sentence = require('./model/rundomSentence.js');
 
 app.get('/battle/start', function(req, res) {
@@ -81,7 +97,6 @@ app.get('/battle/start', function(req, res) {
 var User = require('./model/user.js');
 
 io.on('connection', function(socket){
-
   socket.on('addUser', function(data){
     socket.join('main room');
     socket.leave(socket.id);
@@ -93,33 +108,22 @@ io.on('connection', function(socket){
     console.log(`user "${data.username}" connected with socket "${socket.id}"`);
   });
 
-  socket.on('readyForBattrle', function(data){
+  socket.on('stopBattrle', function(data){
+    User.getByUsername(data.username, function(err, userDB){
+      if (err) throw err;
+      userDB.battleStatus = 'not in battle';
+      userDB.save();
+    });
+  });
+
+  socket.on('startBattrle', function(data){
+    var cps = null;
     User.getByUsername(data.username, function(err, userDB){
       if (err) throw err;
       userDB.battleStatus = 'ready for battle';
-      userDB.save();
-
-      /** find 2 oponents for battle */
-      var query = {
-        battleStatus: 'ready for battle',
-        cps: userDB.cps
-      };
-      User.getUsersForBattle(query, function(err, users){
+      userDB.save(function(err, savedUser){
         if (err) throw err;
-        if (users.length > 1) {
-          var roomIndex = new Date().getTime();
-          var roomName = 'room' + roomIndex;
-          users.forEach(function(user){
-            if (battleRooms[roomName] === undefined) {
-              battleRooms[roomName] = [user.username];
-            } else {
-              battleRooms[roomName].push(user.username);
-            }
-            user.battleStatus = 'in battle';
-            user.save();
-            /** TODO send for users redirect socket... */
-          });
-        }
+        getOponentsForBattle(savedUser.cps);
       });
     });
   });
@@ -133,6 +137,37 @@ io.on('connection', function(socket){
       }
     }
   });
+
+  function getOponentsForBattle(cps) {
+    /** find 2 oponents for battle */
+    var query = {
+      battleStatus: 'ready for battle',
+      cps: cps
+    };
+    User.getUsersForBattle(query, function(err, users){
+      if (err) throw err;
+      if (users.length > 1) {
+        var roomIndex = new Date().getTime();
+        var roomName = 'room' + roomIndex;
+        users.forEach(function(user){
+          if (battleRooms[roomName] === undefined) {
+            battleRooms[roomName] = [user.username];
+          } else {
+            battleRooms[roomName].push(user.username);
+          }
+          user.battleRoom = roomName;
+          user.battleStatus = 'in battle';
+          user.save(function(err, savedUser){
+            if (err) throw err;
+            /** send redirect message for found users to battle page */
+            usersOnline[user.username].forEach(function(userSocket){
+              io.sockets.connected[userSocket].emit('battleStarted', 'Battle started');
+            });
+          });
+        });
+      }
+    });
+  };
 });
 
 http.listen(3000, function(){

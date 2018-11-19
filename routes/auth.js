@@ -55,7 +55,7 @@ router.post('/register', function(req, res){
     email: req.body.email,
     name: req.body.name,
     battleStatus: 'not in battle',
-    oponent: '',
+    battleRoom: '',
     cps: 0
   });
 

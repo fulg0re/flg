@@ -3,7 +3,16 @@ $(document).ready(function(){
   socket.emit("addUser", {"username": $.cookie('username')});
 
   $("#start-battle").click(function(){
-    socket.emit("readyForBattrle", {"username": $.cookie('username')});
+    socket.emit("startBattrle", {"username": $.cookie('username')});
+  });
+
+  $("#stop-battle").click(function(){
+    socket.emit("stopBattrle", {"username": $.cookie('username')});
+  });
+
+  socket.on('battleStarted', function(data){
+    url = "/battle/progress";
+    $(location).attr("href", url);
   });
 
 

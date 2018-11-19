@@ -32,7 +32,7 @@ var UserSchema = mongoose.Schema({
   battleStatus: {
     type: String
   },
-  oponent: {
+  battleRoom: {
     type: String
   },
   cps: {
